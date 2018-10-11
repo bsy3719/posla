@@ -1,0 +1,25 @@
+# connect to server
+# 2018.10.03
+# BCODE
+
+import socket
+
+class Connect(object):
+    def __init__(self, HOST, PORT):
+        self.host = HOST
+        self.port = PORT
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.connect((self.host, self.port))
+        print('Connected')
+
+    def Get_Data(self):
+        return self.server_socket.recv(1).decode()
+    
+    def Get_Socket(self):
+        return self.server_socket
+
+    def __del__(self):
+        self.server_socket.close()
+        
+           
+
