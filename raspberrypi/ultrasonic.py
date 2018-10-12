@@ -66,7 +66,7 @@ class UltraSonic(object) :
 
             distance = round((pulse_end - pulse_start) * 17000, 2)
               
-            server.send_data(str(distance).encode())
+            server.Send_Data(str(distance).encode())
 
     def __del__(self) :
         gpio.cleanup()
