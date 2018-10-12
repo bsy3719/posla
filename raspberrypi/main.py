@@ -7,7 +7,7 @@ import mic
 
 def run():
     HOST = '192.168.0.90'
-    PORT = 5034
+    PORT = 5036
     #socket create for camera
     camera_socket = server_connect.Connect(HOST, PORT)
     
@@ -29,9 +29,9 @@ def run():
     #us_thread = threading.Thread(target=us.run, args=(us_socket,))
     #us_thread.start()
 
-    #mic = mic.MicrophoneStream()    
-    #mic_thread = threading.Thread(target=mic.run, args=(mic_socket,))
-    #mic_thread.start()
+    #microphone = mic.MicrophoneStream()    
+    #microphone_thread = threading.Thread(target=microphone.run, args=(mic_socket,))
+    #microphone_thread.start()
 
     print('start')
 
