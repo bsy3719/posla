@@ -3,6 +3,7 @@ from __future__ import division
 import re
 import sys
 import os
+import time
 
 from google.cloud import speech
 from google.cloud.speech import enums
@@ -20,7 +21,7 @@ class MicrophoneStream(object):
         self._buff = queue.Queue()
         self.closed = True
 
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=""
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="/home/pi/Documents/"
 
         self.client = speech.SpeechClient()
         self.config = types.RecognitionConfig(encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
@@ -66,6 +67,7 @@ class MicrophoneStream(object):
 
     def listen_print_loop(self, responses, server):
         num_chars_printed = 0
+        start_time = time.time()
         for response in responses:
             if not response.results:
                 continue
@@ -78,22 +80,16 @@ class MicrophoneStream(object):
 
             overwrite_chars = ' ' * (num_chars_printed - len(transcript))
 
-            if not result.is_final:
-                sys.stdout.write(transcript + overwrite_chars + '\r')
-                sys.stdout.flush()
-
-                num_chars_printed = len(transcript)
-
-            else:
-                print('dddd', transcript + overwrite_chars)
-                server.Send_Data((transcript + overwrite_chars)).encode())
-
-                num_chars_printed = 0
+            if time.time() - start_time > 2.0 :
+                server.Send_Data((transcript + overwrite_chars).encode())
+                break
 
     def run(self, server) :
-        audio_generator = self.generator()
-        requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audio_generator)
-        responses = self.client.streaming_recognize(self.streaming_config, requests)
-        self.listen_print_loop(responses, server)
-
-
+        while True :
+            audio_generator = self.generator()
+            requests = (types.StreamingRecognizeRequest(audio_content=content) for content in audio_generator)
+            responses = self.client.streaming_recognize(self.streaming_config, requests)
+            try :
+                self.listen_print_loop(responses, server)
+            except :
+                continue
