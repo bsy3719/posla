@@ -3,6 +3,7 @@ import rasp_serial
 import Camera
 import threading
 import ultrasonic
+import mic
 
 def run():
     HOST = '192.168.0.90'
@@ -13,6 +14,9 @@ def run():
     #socket create for ultrasonic sensor
     #us_socket = server_connect.Connect(HOST, PORT+1)
     
+    #socket create for mic
+    #mic_socket = server_connect.Connect(HOST, PORT+2)
+
     #create raspberrypi object
     serial = rasp_serial.Serial()    
     
@@ -24,6 +28,10 @@ def run():
     #us = ultrasonic.UltraSonic()    
     #us_thread = threading.Thread(target=us.run, args=(us_socket,))
     #us_thread.start()
+
+    #mic = mic.MicrophoneStream()    
+    #mic_thread = threading.Thread(target=mic.run, args=(mic_socket,))
+    #mic_thread.start()
 
     print('start')
 
