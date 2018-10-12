@@ -18,8 +18,10 @@ class Connect(object):
     def Get_Socket(self):
         return self.server_socket
 
+    def Send_Data(self, data) :
+        self.server_socket.send(data)
+
     def __del__(self):
         self.server_socket.close()
-        
            
 
