@@ -2,10 +2,15 @@ import wiringpi
 
 class Serial(object):
     def __init__(self):
+
+        # default speed
+        self.speed = 150
+
         # motor
         self.STOP = 0
         self.FORWARD = 1
         self.BACKWARD = 2
+        self.DIR = 3
 
         #motor channel
         self.CH1 = 0
@@ -21,8 +26,8 @@ class Serial(object):
 
         #Raspberry GPIO setting
         #PWM
-        self.ENA = 4
-        self.ENB = 5
+        self.ENA = 4 #front wheel
+        self.ENB = 5 #rear wheel
 
         #GPIO PIN
         self.IN1 = 22
@@ -61,34 +66,38 @@ class Serial(object):
         elif stat == self.STOP:
             wiringpi.digitalWrite(INA, self.LOW)
             wiringpi.digitalWrite(INB, self.LOW)
+
+        elif stat == self.DIR:
+            wiringpi.digitalWrite(INA, self.HIGH)
+            wiringpi.digitalWrite(INB, self.HIGH)
         
     #motor control function_warp
+    #ch1 == front
+    #ch2 == back
     def setMotor(self, ch, speed, stat):
         if ch == self.CH1:
             self.setMotorControl(self.ENA, self.IN1, self.IN2, speed, stat)
         else :
             self.setMotorControl(self.ENB, self.IN3, self.IN4, speed, stat)
-    
+
     def steer(self, data):
         if data == 'w' :
-            self.setMotor(self.CH1, 110, self.FORWARD)
-            self.setMotor(self.CH2, 160, self.FORWARD)
+            self.setMotor(self.CH2, self.speed, self.FORWARD)
         elif data == 'x' :
-            self.setMotor(self.CH1, 100, self.BACKWARD)
-            self.setMotor(self.CH2, 100, self.BACKWARD)
+            self.setMotor(self.CH2, self.speed, self.BACKWARD)
         elif data == 'a' :
-            self.setMotor(self.CH1, 210, self.FORWARD)
-            self.setMotor(self.CH2, 60, self.FORWARD)
+            self.setMotor(self.CH1, 255, self.FORWARD)
+            self.setMotor(self.CH2, self.speed, self.FORWARD)
         elif data == 'd' :
-            self.setMotor(self.CH1, 50, self.FORWARD)
-            self.setMotor(self.CH2, 210, self.FORWARD)
+            self.setMotor(self.CH1, 255, self.BACKWARD)
+            self.setMotor(self.CH2, self.speed, self.FORWARD)
         elif data == 's' :
-            self.setMotor(self.CH1, 0, self.STOP)
+            self.setMotor(self.CH1, self.speed, self.DIR)
             self.setMotor(self.CH2, 0, self.STOP)
-        elif data == 'z' :
-            self.setMotor(self.CH1, 230, self.BACKWARD)
-            self.setMotor(self.CH2, 60, self.BACKWARD)
         elif data == 'c' :
-            self.setMotor(self.CH1, 60, self.BACKWARD)
-            self.setMotor(self.CH2, 230, self.BACKWARD)
+            self.setMotor(self.CH1, 255, self.BACKWARD)
+            self.setMotor(self.CH2, self.speed, self.BACKWARD)
+        elif data == 'z' :
+            self.setMotor(self.CH1, self.speed, self.FORWARD)
+            self.setMotor(self.CH2, 255, self.BACKWARD)
 
