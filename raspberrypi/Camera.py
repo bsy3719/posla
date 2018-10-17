@@ -9,7 +9,6 @@ class Camera(object):
 
     def run(self):
         with picamera.PiCamera() as camera :
-            #server = self.server.makefile('wb')
             camera.resolution = (320, 240)
             camera.framerate = 10
             time.sleep(2)
