@@ -43,8 +43,8 @@ import time
 class UltraSonic(object) :
     def __init__(self) :
         gpio.setmode(gpio.BCM)
-        self.trig = 16
-        self.echo = 12
+        self.trig = 17
+        self.echo = 27
 
         gpio.setup(self.trig, gpio.OUT)
         gpio.setup(self.echo, gpio.IN)
