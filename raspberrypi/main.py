@@ -9,7 +9,7 @@ def run():
     HOST = '192.168.0.90'
     PORT = 5036
     #socket create for camera
-    camera_socket = server_connect.Connect(HOST, PORT)
+    server_socket = server_connect.Connect(HOST, PORT)
     
     #socket create for ultrasonic sensor
     #us_socket = server_connect.Connect(HOST, PORT+1)
@@ -21,7 +21,7 @@ def run():
     serial = rasp_serial.Serial()    
     
     #if connected to server..start thread and send camera frame
-    camera = Camera.Camera(camera_socket.Get_Socket())
+    camera = Camera.Camera(server_socket.Get_Socket())
     camera_thread = threading.Thread(target=camera.run, args=())
     camera_thread.start()
 
@@ -36,7 +36,7 @@ def run():
     print('start')
 
     while True:
-        data =  server.Get_Data()
+        data =  server_socket.Get_Data()
         if data == 'q' :
             break
         serial.steer(data)
