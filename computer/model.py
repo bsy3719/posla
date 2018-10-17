@@ -3,18 +3,15 @@ from tensorflow.python.keras.layers import Flatten, Dense, Activation
 from tensorflow.python.keras.layers.convolutional import Conv2D, MaxPooling2D
 from tensorflow.python.keras.layers.core import Dropout
 from tensorflow.python.keras.models import load_model
-from tensorflow.python.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.python.keras.optimizers import Adam
 from tensorflow.python.keras.layers.normalization import BatchNormalization
 
-
 import numpy as np
 import glob
-import sys
 from sklearn.model_selection import train_test_split
 from matplotlib import pyplot as plt
 
-def load_data(path = './training_data/*.npz'):
+def load_data(path = './training_data/*.npz', random_state = 42):
 
     x_train = np.empty((0, 120, 320, 1))
     y_train = np.empty((0, 4))
@@ -32,10 +29,13 @@ def load_data(path = './training_data/*.npz'):
     # 트레이닝셋을 잘못 만들어서 잘라줘함
     y_train = y_train[:, :-1]
 
+    print('load data!!!')
+
     # train test split, 7:3
-    return train_test_split(x_train, y_train, test_size=0.3)
+    return train_test_split(x_train, y_train, test_size=0.3 ,random_state= random_state)
 
 def show_data(x, y):
+    print("show data!!!")
 
     plt_row = 5
     plt_col = 5
@@ -94,7 +94,7 @@ class NeuralNetwork():
         opt = Adam(lr = self.learning_rate, decay= self.learning_rate / self.epochs)
         self.model.compile(loss="categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 
-        self.hist = self.model.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, validation_split=self.split_ratio, shuffle=True)
+        self.hist = self.model.fit(x_train, y_train, epochs=self.epochs, batch_size=self.batch_size, validation_split=self.split_ratio, verbose=2)
 
 
     def show_resualt(self):
@@ -116,22 +116,21 @@ class NeuralNetwork():
 
         plt.show();
 
-    def evaluate(self, x_test, y_test):
+    def evaluate(self, x_test, y_test , batch_size = 256):
+        self.batch_size = batch_size
         loss_and_metrics = self.model.evaluate(x_test, y_test, self.batch_size)
         print('## evaluation loss and_metrics ##')
         print(loss_and_metrics)
 
 
-    def show_prediction(self, x_test, y_test):
-        xhat_idx = np.random.choice(x_test.shape[0], 10)
+    def show_prediction(self, x_test, y_test, n = 10):
+        xhat_idx = np.random.choice(x_test.shape[0], n)
         xhat = x_test[xhat_idx]
 
         yhat_classes = self.model.predict_classes(xhat)
 
-        for i in range(10):
+        for i in range(n):
             print('True : ' + str(np.argmax(y_test[xhat_idx[i]])) + ', Predict : ' + str(yhat_classes[i]))
-
-
 
     def create_nvidia_model(self, raw = 120, column = 320, channel = 1):
         print('create nvidia model!!')
@@ -247,6 +246,54 @@ class NeuralNetwork():
         model.add(Activation("softmax"))
 
         # return the constructed network architecture
+        self.model = model
+
+    def video_model(self, raw=120, column=320, channel=1):
+        # model setting
+        inputShape = (raw, column, channel)
+
+        activation = 'relu'
+        keep_prob_conv = 0.25
+        keep_prob_dense = 0.5
+
+        init = 'glorot_normal'
+        chanDim = -1
+        classes = 3
+
+        model = Sequential()
+
+        # CONV => RELU => POOL
+        model.add(Conv2D(3, (3, 3), padding="valid", input_shape=inputShape, kernel_initializer=init))
+        model.add(Activation(activation))
+        model.add(BatchNormalization(axis=chanDim))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+
+        model.add(Conv2D(9, (3, 3), padding="valid", kernel_initializer=init))
+        model.add(Activation(activation))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+
+        model.add(Conv2D(18, (3, 3), padding="valid", kernel_initializer=init))
+        model.add(Activation(activation))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+
+        model.add(Conv2D(32, (3, 3), padding="valid", kernel_initializer=init))
+        model.add(Activation(activation))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+
+        model.add(Flatten())
+
+        model.add(Dense(80, kernel_initializer=init))
+        model.add(Activation(activation))
+        model.add(Dropout(keep_prob_dense))
+
+        model.add(Dense(15, kernel_initializer=init))
+        model.add(Activation(activation))
+        model.add(Dropout(keep_prob_dense))
+
+        # softmax classifier
+        model.add(Dense(classes))
+        model.add(Activation("softmax"))
+
         self.model = model
 
 
