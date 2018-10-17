@@ -4,7 +4,7 @@ class Serial(object):
     def __init__(self):
 
         # default speed
-        self.speed = 150
+        self.speed = 120
 
         # motor
         self.STOP = 0
@@ -82,6 +82,7 @@ class Serial(object):
 
     def steer(self, data):
         if data == 'w' :
+            self.setMotor(self.CH1, self.speed, self.DIR)
             self.setMotor(self.CH2, self.speed, self.FORWARD)
         elif data == 'x' :
             self.setMotor(self.CH2, self.speed, self.BACKWARD)
@@ -94,10 +95,4 @@ class Serial(object):
         elif data == 's' :
             self.setMotor(self.CH1, self.speed, self.DIR)
             self.setMotor(self.CH2, 0, self.STOP)
-        elif data == 'c' :
-            self.setMotor(self.CH1, 255, self.BACKWARD)
-            self.setMotor(self.CH2, self.speed, self.BACKWARD)
-        elif data == 'z' :
-            self.setMotor(self.CH1, self.speed, self.FORWARD)
-            self.setMotor(self.CH2, 255, self.BACKWARD)
 
