@@ -6,13 +6,13 @@ class Steer(object):
 
     def __init__(self, client):
         self.client = client
-        self.ultrasonic = 0.
+        self.ultrasonic = 0
         self.microphone = ''
         self.line = ''
         self.obj_list = []
         
     def Set_UltraSonic(self, ultra) :
-        self.ultrasonic = float(ultra)
+        self.ultrasonic = int(ultra)
 
     def Set_Microphone(self, mic) :
         self.microphone = mic
@@ -24,7 +24,7 @@ class Steer(object):
         self.obj_list = obj
 
     def ultrasonic_process(self, ultra) :
-        if ultra < 30. :
+        if ultra < 30 :
             return 's' 
         else :
             return 'w'
@@ -40,12 +40,12 @@ class Steer(object):
 
     def Control(self) :               
         us_comm = self.ultrasonic_process(self.ultrasonic)
-        print('dis', us_comm, self.ultrasonic)
+        print('초음파 거리 : ', self.ultrasonic)
 
         mic_comm = self.mic_process(self.microphone)
-        print('음성 명령 :: ', mic_comm)
+        print('음성 명령 : ', mic_comm)
         
-        if (mic_comm == 's') :
+        if (us_comm == 's') :
             self.client.send('s'.encode())
         else :
             if self.line == 2:                
