@@ -16,7 +16,7 @@ from six.moves import queue
 
 class MicrophoneStream(object):
     def __init__(self):
-        self.rate = 16000
+        self.rate = 48000
         self.chunk = int(self.rate / 10)
         self.language_code = 'ko-KR'
 
@@ -24,7 +24,7 @@ class MicrophoneStream(object):
         self._buff = queue.Queue()
         self.closed = True
 
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="/home/pi/Documents/"
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=""
 
         self.client = speech.SpeechClient()
         self.config = types.RecognitionConfig(encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
