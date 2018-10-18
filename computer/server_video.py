@@ -1,7 +1,9 @@
 import numpy as np
 import cv2
-import Object
 import threading
+
+import Object
+import StopLine
 
 from model import NeuralNetwork
 
@@ -11,6 +13,9 @@ class CollectTrainingData(object):
 
         self.client = client        
         self.steer = steer
+
+        self.stopline = StopLine.Stop()
+        self.dect = Object.Object_Detection()
 
         # model create
         self.model = NeuralNetwork()
@@ -35,8 +40,10 @@ class CollectTrainingData(object):
                 rgb = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)   
                 roi = image[120:240, :]
 
-                #cv2.imshow('roi', roi)
-                cv2.imshow('origin', image)
+                
+                cv2.imshow('RGB', rgb)
+                cv2.imshow('GRAY', image)
+                cv2.imshow('roi', roi)
 
                 # reshape the roi image into a vector
                 image_array = np.reshape(roi, (-1, 120, 320, 1))                  
@@ -44,10 +51,39 @@ class CollectTrainingData(object):
                 try:
                     # neural network makes prediction
                     self.steer.Set_Line(self.model.predict(image_array))
-                    #self.steer.Set_ObjectDectection(self.dect.Dectection(rgb))
+                    print(self.stopline.GetStopLine(rgb))
+                    self.steer.Set_ObjectDectection(self.dect.Dectection(rgb))                    
                     self.steer.Control()
                 except:
                     continue
 
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
