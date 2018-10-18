@@ -14,7 +14,7 @@ class CollectTrainingData(object):
 
         # model create
         self.model = NeuralNetwork()
-        self.model.load_model(path = 'video_model_1.h5')          
+        self.model.load_model(path = 'training_data/video_model_1.h5')          
 
     def collect(self):
 
