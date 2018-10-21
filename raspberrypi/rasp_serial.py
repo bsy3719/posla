@@ -1,10 +1,14 @@
 import wiringpi
+import playmusic
 
 class Serial(object):
     def __init__(self):
 
+        self.music = playmusic.MUSIC()
+
         # default speed
-        self.speed = 120
+        self.default_speed = 150
+        self.speed = self.default_speed
 
         # motor
         self.STOP = 0
@@ -30,10 +34,10 @@ class Serial(object):
         self.ENB = 5 #rear wheel
 
         #GPIO PIN
-        self.IN1 = 22
-        self.IN2 = 23
-        self.IN3 = 24
-        self.IN4 = 25    
+        self.IN1 = 30
+        self.IN2 = 21
+        self.IN3 = 22
+        self.IN4 = 23    
 
         wiringpi.wiringPiSetup()
 
@@ -81,7 +85,15 @@ class Serial(object):
             self.setMotorControl(self.ENB, self.IN3, self.IN4, speed, stat)
 
     def steer(self, data):
-        if data == 'w' :
+        print(data)
+        if data == '60' :
+            print('limit 60')
+            self.speed = 200
+            self.music.play_music('./sounds/limit60.mp3')                
+        elif data == '30' :
+            self.speed = self.default_speed
+            self.music.play_music('./sounds/limit30.mp3')
+        elif data == 'w' :
             self.setMotor(self.CH1, self.speed, self.DIR)
             self.setMotor(self.CH2, self.speed, self.FORWARD)
         elif data == 'x' :
@@ -92,7 +104,12 @@ class Serial(object):
         elif data == 'd' :
             self.setMotor(self.CH1, 255, self.BACKWARD)
             self.setMotor(self.CH2, self.speed, self.FORWARD)
-        elif data == 's' :
+        elif (data == 's') or (data == 'us') or (data == 'ls') :
             self.setMotor(self.CH1, self.speed, self.DIR)
             self.setMotor(self.CH2, 0, self.STOP)
-
+            if data == 's' :
+                self.music.play_music('./sounds/stop.mp3')
+            elif data == 'us' :
+                self.music.play_music('./sounds/obs_stop.mp3')
+            elif data == 'ls' :
+                self.music.play_music('./sounds/light_stop.mp3')
