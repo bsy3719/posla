@@ -1,6 +1,7 @@
 import server_socket
 import threading
 import os
+import time
 
 class Steer(object):
 
@@ -10,6 +11,8 @@ class Steer(object):
         self.microphone = ''
         self.line = ''
         self.obj_list = []
+        self.stopline = False
+        self.state = ''
         
     def Set_UltraSonic(self, ultra) :
         self.ultrasonic = int(ultra)
@@ -20,43 +23,84 @@ class Steer(object):
     def Set_Line(self, line) :
         self.line = line
 
-    def Set_ObjectDectection(self, obj) :
+    def Set_Stopline(self, result):
+        self.stopline = result
+
+    def Set_ObjectDetection(self, obj) :
         self.obj_list = obj
 
     def ultrasonic_process(self, ultra) :
-        if ultra < 30 :
+        if ultra < 20 :
             return 's' 
         else :
             return 'w'
 
     def mic_process(self, speech) :
-        if speech == '멈춰' :
-            return 's'
-        elif speech == '가' :
+        if (speech == '정지') or (speech == '멈춰') :
+            return 's'  
+        elif (speech == '가') or (speech == '가라고') or (speech == '출발') :
             return 'w'
-        elif speech == '가라고' :
-            return 'w'
- 
-
-    def Control(self) :               
-        us_comm = self.ultrasonic_process(self.ultrasonic)
-        print('초음파 거리 : ', self.ultrasonic)
-
-        mic_comm = self.mic_process(self.microphone)
-        print('음성 명령 : ', mic_comm)
-        
-        if (us_comm == 's') :
-            self.client.send('s'.encode())
         else :
-            if self.line == 2:                
-                self.client.send('w'.encode())
-                print("Forward")
-            elif self.line == 0:
-                self.client.send('a'.encode())
-                print("Left")
-            elif self.line == 1:
-                self.client.send('d'.encode())
-                print("Right")
-            else :
-                print("None")
-             
+            return ''
+
+    def Control(self) :
+        mic_comm = self.mic_process(self.microphone)
+        us_comm = self.ultrasonic_process(self.ultrasonic)
+
+        #os.system('clear')
+        print('전방 거리 : ', self.ultrasonic)
+        print('상태 : ', self.state)
+        print('음성 명령 : ', self.microphone)
+
+        # all station only one send data
+        # speed limit
+        if 'limit30' in self.obj_list :
+            if self.state != '30' :
+                self.client.send('30'.encode())
+                self.state = '30'
+        elif 'limit60' in self.obj_list :
+            print('limit 60')
+            if self.state != '60' :
+                self.client.send('60'.encode())
+                self.state = '60'
+
+        # stop 
+        # it's only for different sound..
+        if ('redlight' in self.obj_list) and (self.stopline == True) :
+            if (self.state != 'STOP') or (mic_comm == 'w') :
+                self.state = 'STOP'
+                self.client.send('ls'.encode())
+                print('RED LIGHT')
+
+        elif (mic_comm == 's') :
+            if self.state != 'STOP' :
+                self.client.send('s'.encode())
+                self.state = 'STOP'
+                print('STOP')
+
+        elif (us_comm == 's') :
+            if self.state != 'STOP' :
+                self.client.send('us'.encode())
+                self.state = 'STOP'
+                print('STOP')
+
+        # driving
+        else :  
+            if self.state != 'RUN' :          
+                self.state = 'RUN'
+                if ('turn_right_yes' in self.obj_list) and (self.stopline == True) : 
+                    time.sleep(1)
+                    self.client.send('d'.encode())
+                elif self.line == 2:                
+                    self.client.send('w'.encode())
+                    print("FORWARD")
+                elif self.line == 0:
+                    self.client.send('a'.encode())
+                    print("LEFT")
+                elif self.line == 1:
+                    self.client.send('d'.encode())
+                    print("RIGHT")
+                else :
+                    print("WAIT..")
+
+        self.microphone = ''
