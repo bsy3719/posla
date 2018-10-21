@@ -83,7 +83,8 @@ class MicrophoneStream(object):
 
             overwrite_chars = ' ' * (num_chars_printed - len(transcript))
 
-            if time.time() - start_time > 2.0 :
+            if time.time() - start_time > 1.0 :
+                print('speech : ', (transcript + overwrite_chars))
                 server.Send_Data((transcript + overwrite_chars).encode())
                 break
 
