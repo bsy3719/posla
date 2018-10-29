@@ -85,7 +85,7 @@ class NeuralNetwork():
     def summary(self):
         self.model.summary()
 
-    def train(self, x_train, y_train, epochs = 50, learning_rate = 1e-3 , batch_size = 32, split_ratio = 0.2):
+    def train(self, x_train, y_train, epochs = 50, learning_rate = 1e-4 , batch_size = 256, split_ratio = 0.2):
         self.epochs = epochs
         self.learning_rate = learning_rate
         self.batch_size = batch_size
@@ -132,7 +132,7 @@ class NeuralNetwork():
         for i in range(n):
             print('True : ' + str(np.argmax(y_test[xhat_idx[i]])) + ', Predict : ' + str(yhat_classes[i]))
 
-    def create_nvidia_model(self, raw = 120, column = 320, channel = 1):
+    def create_nvidia_net(self, raw = 120, column = 320, channel = 1):
         print('create nvidia model!!')
 
         input_shape = (raw, column, channel)
@@ -181,7 +181,7 @@ class NeuralNetwork():
 
         self.model = model
 
-    def create_VGG_model(self, raw=120, column=320, channel=1):
+    def create_VGG_net(self, raw=120, column=320, channel=1):
         print('create VGG model!!')
 
         inputShape = (raw, column, channel)
@@ -198,37 +198,37 @@ class NeuralNetwork():
         model = Sequential()
 
         # CONV => RELU => POOL
-        model.add(Conv2D(32, (3, 3), padding="same", input_shape=inputShape))
+        model.add(Conv2D(32, (3, 3), padding="same", input_shape=inputShape, kernel_initializer=init))
         model.add(Activation(activation))
         model.add(BatchNormalization(axis=chanDim))
         model.add(MaxPooling2D(pool_size=(3, 3)))
         model.add(Dropout(keep_prob_conv))
 
         # (CONV => RELU) * 2 => POOL
-        model.add(Conv2D(64, (3, 3), padding="same"))
+        model.add(Conv2D(64, (3, 3), padding="same", kernel_initializer=init))
         model.add(Activation(activation))
         model.add(BatchNormalization(axis=chanDim))
-        model.add(Conv2D(64, (3, 3), padding="same"))
-        model.add(Activation(activation))
-        model.add(BatchNormalization(axis=chanDim))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Dropout(keep_prob_conv))
-
-        # (CONV => RELU) * 2 => POOL
-        model.add(Conv2D(128, (3, 3), padding="same"))
-        model.add(Activation(activation))
-        model.add(BatchNormalization(axis=chanDim))
-        model.add(Conv2D(128, (3, 3), padding="same"))
+        model.add(Conv2D(64, (3, 3), padding="same", kernel_initializer=init))
         model.add(Activation(activation))
         model.add(BatchNormalization(axis=chanDim))
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Dropout(keep_prob_conv))
 
         # (CONV => RELU) * 2 => POOL
-        model.add(Conv2D(128, (3, 3), padding="same"))
+        model.add(Conv2D(128, (3, 3), padding="same", kernel_initializer=init))
         model.add(Activation(activation))
         model.add(BatchNormalization(axis=chanDim))
-        model.add(Conv2D(128, (3, 3), padding="same"))
+        model.add(Conv2D(128, (3, 3), padding="same", kernel_initializer=init))
+        model.add(Activation(activation))
+        model.add(BatchNormalization(axis=chanDim))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(keep_prob_conv))
+
+        # (CONV => RELU) * 2 => POOL
+        model.add(Conv2D(128, (3, 3), padding="same", kernel_initializer=init))
+        model.add(Activation(activation))
+        model.add(BatchNormalization(axis=chanDim))
+        model.add(Conv2D(128, (3, 3), padding="same", kernel_initializer=init))
         model.add(Activation(activation))
         model.add(BatchNormalization(axis=chanDim))
         model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -236,7 +236,7 @@ class NeuralNetwork():
 
         # first (and only) set of FC => RELU layers
         model.add(Flatten())
-        model.add(Dense(1024))
+        model.add(Dense(1024, kernel_initializer=init))
         model.add(Activation(activation))
         model.add(BatchNormalization())
         model.add(Dropout(keep_prob_dense))
@@ -248,51 +248,47 @@ class NeuralNetwork():
         # return the constructed network architecture
         self.model = model
 
-    def video_model(self, raw=120, column=320, channel=1):
+    def create_posla_net(self, raw=120, column=320, channel=1):
         # model setting
+
         inputShape = (raw, column, channel)
 
         activation = 'relu'
         keep_prob_conv = 0.25
         keep_prob_dense = 0.5
 
-        init = 'glorot_normal'
+        # init = 'glorot_normal'
+        # init = 'he_normal'
+        init = 'he_uniform'
         chanDim = -1
         classes = 3
 
         model = Sequential()
 
         # CONV => RELU => POOL
-        model.add(Conv2D(3, (3, 3), padding="valid", input_shape=inputShape, kernel_initializer=init))
-        model.add(Activation(activation))
+        model.add(Conv2D(3, (3, 3), padding="valid", input_shape=inputShape, kernel_initializer=init, activation=activation))
         model.add(BatchNormalization(axis=chanDim))
         model.add(MaxPooling2D(pool_size=(2, 2)))
 
-        model.add(Conv2D(9, (3, 3), padding="valid", kernel_initializer=init))
-        model.add(Activation(activation))
+        model.add(Conv2D(9, (3, 3), padding="valid", kernel_initializer=init, activation=activation))
         model.add(MaxPooling2D(pool_size=(2, 2)))
 
-        model.add(Conv2D(18, (3, 3), padding="valid", kernel_initializer=init))
-        model.add(Activation(activation))
+        model.add(Conv2D(18, (3, 3), padding="valid", kernel_initializer=init, activation=activation))
         model.add(MaxPooling2D(pool_size=(2, 2)))
 
-        model.add(Conv2D(32, (3, 3), padding="valid", kernel_initializer=init))
-        model.add(Activation(activation))
+        model.add(Conv2D(32, (3, 3), padding="valid", kernel_initializer=init, activation=activation))
         model.add(MaxPooling2D(pool_size=(2, 2)))
 
         model.add(Flatten())
 
-        model.add(Dense(80, kernel_initializer=init))
-        model.add(Activation(activation))
+        model.add(Dense(80, kernel_initializer=init, activation=activation))
         model.add(Dropout(keep_prob_dense))
 
-        model.add(Dense(15, kernel_initializer=init))
-        model.add(Activation(activation))
+        model.add(Dense(15, kernel_initializer=init, activation=activation))
         model.add(Dropout(keep_prob_dense))
 
         # softmax classifier
-        model.add(Dense(classes))
-        model.add(Activation("softmax"))
+        model.add(Dense(classes, activation='softmax'))
 
         self.model = model
 
