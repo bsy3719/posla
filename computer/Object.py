@@ -30,8 +30,8 @@ class Object_Detection():
                           thickness=2)
             cv2.putText(img, 
                         str(cat.decode("utf-8")), 
-                        (int(x - w / 2 - 1), int(y - h / 2 - 1)), 
-                        cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 0))
+                        (int(x - w / 2), int(y + h / 4)), 
+                        cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255))
             detect_list.append(cat.decode())
 
         cv2.imshow('dect', img)

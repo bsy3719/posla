@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import threading
 
 import Object
 import StopLine
@@ -38,12 +39,11 @@ class CollectTrainingData(object):
 
                     image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_GRAYSCALE)
                     rgb = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
-                    rgb2 = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
-                    roi = image[120:240, :]
+                    rgb2 = rgb.copy()
+                    roi = image[120:240, :]                    
                     roi2 = rgb2[120:240, :] #for line roi
 
-                
-                    cv2.imshow('RGB', rgb)
+                    cv2.imshow('Origin', rgb)
                     cv2.imshow('GRAY', image)
                     cv2.imshow('roi', roi)
 
@@ -60,6 +60,7 @@ class CollectTrainingData(object):
 
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
+
 
 
 

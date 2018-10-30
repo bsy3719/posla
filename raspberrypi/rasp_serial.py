@@ -7,7 +7,7 @@ class Serial(object):
         self.music = playmusic.MUSIC()
 
         # default speed
-        self.default_speed = 150
+        self.default_speed = 120
         self.speed = self.default_speed
 
         # motor
@@ -88,23 +88,28 @@ class Serial(object):
         print(data)
         if data == '60' :
             print('limit 60')
-            self.speed = 200
+            self.speed = 180
             self.music.play_music('./sounds/limit60.mp3')                
         elif data == '30' :
             self.speed = self.default_speed
             self.music.play_music('./sounds/limit30.mp3')
-        elif data == 'w' :
+        elif (data == 'w') or (data == 'lw') or (data == 'ww') :
             self.setMotor(self.CH1, self.speed, self.DIR)
+
             self.setMotor(self.CH2, self.speed, self.FORWARD)
+            if data == 'lw' :
+                self.music.play_music('./sounds/go.mp3')
         elif data == 'x' :
             self.setMotor(self.CH2, self.speed, self.BACKWARD)
         elif data == 'a' :
             self.setMotor(self.CH1, 255, self.FORWARD)
             self.setMotor(self.CH2, self.speed, self.FORWARD)
-        elif data == 'd' :
+        elif (data == 'd') or (data == 'td') :
             self.setMotor(self.CH1, 255, self.BACKWARD)
             self.setMotor(self.CH2, self.speed, self.FORWARD)
-        elif (data == 's') or (data == 'us') or (data == 'ls') :
+            if data == 'td' :
+                self.music.play_music('./sounds/turn_right.mp3')
+        elif (data == 's') or (data == 'us') or (data == 'ls') or (data == 'ss') :
             self.setMotor(self.CH1, self.speed, self.DIR)
             self.setMotor(self.CH2, 0, self.STOP)
             if data == 's' :
@@ -113,3 +118,5 @@ class Serial(object):
                 self.music.play_music('./sounds/obs_stop.mp3')
             elif data == 'ls' :
                 self.music.play_music('./sounds/light_stop.mp3')
+            elif data == 'ss' :
+                self.music.play_music('./sounds/wait.mp3')

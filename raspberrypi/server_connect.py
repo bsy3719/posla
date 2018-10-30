@@ -13,7 +13,7 @@ class Connect(object):
         print('Connected')
 
     def Get_Data(self):
-        return self.server_socket.recv(1).decode()
+        return self.server_socket.recv(2).decode()
     
     def Get_Socket(self):
         return self.server_socket

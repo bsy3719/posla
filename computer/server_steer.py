@@ -7,14 +7,20 @@ class Steer(object):
 
     def __init__(self, client):
         self.client = client
-        self.ultrasonic = 0
-        self.microphone = ''
-        self.line = ''
+        self.ultrasonic = 9999
+        self.microphone = 'NONE'
+        self.line = 'NONE'
         self.obj_list = []
         self.stopline = False
-        self.state = ''
+        self.state = 'NONE'
+        self.speed = '0'
+        self.light_signal = 'NONE'
+        self.obs = 'NO'
+        self.stoptime = 0
         
     def Set_UltraSonic(self, ultra) :
+        if int(ultra) > 1000 :
+            return
         self.ultrasonic = int(ultra)
 
     def Set_Microphone(self, mic) :
@@ -30,13 +36,13 @@ class Steer(object):
         self.obj_list = obj
 
     def ultrasonic_process(self, ultra) :
-        if ultra < 20 :
+        if ultra < 30 :
             return 's' 
         else :
             return 'w'
 
     def mic_process(self, speech) :
-        if (speech == '정지') or (speech == '멈춰') :
+        if (speech == '정지') or (speech == '멈춰') or (speech == '멈추라고') :
             return 's'  
         elif (speech == '가') or (speech == '가라고') or (speech == '출발') :
             return 'w'
@@ -48,29 +54,50 @@ class Steer(object):
         us_comm = self.ultrasonic_process(self.ultrasonic)
 
         #os.system('clear')
-        print('전방 거리 : ', self.ultrasonic)
+        print('속도 : ', self.speed)
         print('상태 : ', self.state)
+        print('전방 거리 : ', self.ultrasonic)
+        print('신호 명령 : ', self.light_signal)
         print('음성 명령 : ', self.microphone)
+        print('정지 명령 : ', self.stopline)
+        print('장애물 : ', self.obs)
 
-        # all station only one send data
         # speed limit
         if 'limit30' in self.obj_list :
-            if self.state != '30' :
+            if self.speed != '30' :
                 self.client.send('30'.encode())
-                self.state = '30'
+                self.speed = '30'
         elif 'limit60' in self.obj_list :
             print('limit 60')
-            if self.state != '60' :
+            if self.speed != '60' :
                 self.client.send('60'.encode())
-                self.state = '60'
+                self.speed = '60'
 
         # stop 
         # it's only for different sound..
-        if ('redlight' in self.obj_list) and (self.stopline == True) :
-            if (self.state != 'STOP') or (mic_comm == 'w') :
-                self.state = 'STOP'
+        if (self.stopline == True) and self.stoptime == 0 :
+            if self.state != 'STOP_LINE' :
+                self.stoptime = time.time()                
+                self.client.send('ss'.encode())
+                self.state = 'STOP_LINE'
+                print('STOP LINE')
+                time.sleep(2)
+
+        
+        if self.stopline == True and (time.time() - self.stoptime) > 10 :
+            self.stoptime = 0
+ 
+        if ('redlight' in self.obj_list) :
+            if (self.light_signal != 'LIGHT_STOP') or (mic_comm == 'w') :
                 self.client.send('ls'.encode())
+                self.light_signal = 'LIGHT_STOP'
+                self.state = 'STOP'                
                 print('RED LIGHT')
+
+        elif (mic_comm == 'w') :
+            if self.state == 'STOP' and self.obs != 'YES' :
+                self.client.send('lw'.encode())
+                self.state = 'DRIVE'
 
         elif (mic_comm == 's') :
             if self.state != 'STOP' :
@@ -79,18 +106,29 @@ class Steer(object):
                 print('STOP')
 
         elif (us_comm == 's') :
-            if self.state != 'STOP' :
+            if self.obs != 'YES' :
                 self.client.send('us'.encode())
+                self.obs = 'YES'
                 self.state = 'STOP'
                 print('STOP')
+        elif (us_comm == 'w') :
+            if self.light_signal != 'LIGHT_STOP' and self.obs != 'NO' :
+                self.obs = 'NO'
+                self.state = 'DRIVE'
+                self.client.send('w'.encode())
 
-        # driving
-        else :  
-            if self.state != 'RUN' :          
-                self.state = 'RUN'
-                if ('turn_right_yes' in self.obj_list) and (self.stopline == True) : 
-                    time.sleep(1)
-                    self.client.send('d'.encode())
+        if (self.light_signal=='LIGHT_STOP') and ('greenlight' in self.obj_list) :
+            self.light_signal = 'DRIVE'
+            self.state = 'DRIVE'
+            self.client.send('lw'.encode())
+            
+        # driving                              
+        if (self.light_signal != 'LIGHT_STOP') :
+            if self.state != 'STOP' :
+                self.state = 'DRIVE'
+                if 'turn_right_yes' in self.obj_list :
+                    self.client.send('td'.encode())
+                    print("RIGHT")             
                 elif self.line == 2:                
                     self.client.send('w'.encode())
                     print("FORWARD")

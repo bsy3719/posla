@@ -10,7 +10,7 @@ class Camera(object):
     def run(self):
         with picamera.PiCamera() as camera :
             camera.resolution = (320, 240)
-            camera.framerate = 10
+            camera.framerate = 20
             time.sleep(2)
             start = time.time()
             stream = io.BytesIO()
